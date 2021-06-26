@@ -38,10 +38,10 @@ int menu_principal(){
 	printf("Opciones:\n");
 	printf("0-Salir\n");	//LISTO
 	printf("1-Ver directorio actual\n");	//LISTO
-	printf("2-Moverse a un directorio\n");
+	printf("2-Moverse a un directorio\n"); //LISTO
 	printf("3-Crear Archivo o Carpeta\n");	//LISTO
-	printf("4-Ver causa\n");			//LISTO
-	printf("5-Modificar nombre\n");		//LISTO
+	printf("4-Ver causa\n");			
+	printf("5-Modificar nombre\n");		
 	printf("6-Eliminar\n");				//LISTO
 	printf("7-Mover archivo o carpeta\n");
 	printf("8-Archivar\n");
@@ -137,8 +137,6 @@ void moverse_a_directorio(char* directorio){
         }
         aux = cabeza->curr->hijo;
     }
-    printf("cabeza->curr->nombre: %s\n", aux->nombre);
-    printf("cabeza->curr->path: %s\n", aux->path);
     int flag = 0;
     while(ruta != NULL){
         if (strcmp(aux->nombre, ruta) == 0 && aux->tipo != 1)
@@ -184,6 +182,8 @@ void moverse_a_directorio(char* directorio){
         }
         ruta = strtok(NULL, " ");
     }
+    printf("nombre: %s\n", cabeza->curr->nombre);
+    printf("path actual: %s\n", cabeza->curr->path);
     printf("presione enter para continuar\n");
     while(getchar()!='\n');
     getchar();
@@ -235,26 +235,29 @@ void anidados(nodo_t* nodo){
 		return;
 	}
 	nodo_t* tmp = nodo->hijo;
+	nodo_t* tmp2;
 	if (tmp->adyacente != NULL)
 	{
 		int flag = 1;
-		nodo_t* tmp2 = nodo->hijo->adyacente;
+		tmp2 = tmp->adyacente;
 		while(flag == 1)
 		{
 			if(tmp2->adyacente != NULL)
 			{
 				tmp->adyacente = tmp2->adyacente;
+				anidados(tmp2);
 				free(tmp2);
 			}
 			else {
 				tmp->adyacente = NULL;
+				anidados(tmp2);
 				free(tmp2);
 				flag = 0;
 			}
 		}
 	}
 	else {
-		free(tmp);
+		anidados(tmp);
 		return;
 	}
 	return;
@@ -269,8 +272,12 @@ void eliminar(){
 		printf("La carpeta/archivo no existe\n");
 		return;
 	}
-	nodo_t* tmp = cabeza->curr;
-	printf("nombre de tmp: %s \n", tmp->nombre);
+	if (cabeza->curr->hijo == NULL)
+	{
+		printf("La carpeta/archivo no existe\n");
+		return;
+	}
+	nodo_t* tmp = cabeza->curr->hijo;
 	if (tmp->adyacente != NULL)
 	{
 		nodo_t* tmp2 = cabeza->curr->adyacente;
@@ -284,6 +291,7 @@ void eliminar(){
 					anidados(tmp2);
 					free(tmp2);
 					printf("La carpeta/archivo fue eliminada correctamente\n");
+
 					return;
 				}
 				else {
@@ -308,8 +316,6 @@ void eliminar(){
 	}
 	else if (strcmp(name, tmp->nombre) == 0)
 	{
-		cabeza->curr = NULL;
-		cabeza->raiz = NULL;
 		anidados(tmp);
 		free(tmp);
 		printf("La carpeta/archivo fue eliminada correctamente\n");
