@@ -1,5 +1,5 @@
 /*-carpeta:
-	-next
+	-next 
 	-child(archivos):
 
 -archivo:
@@ -267,20 +267,18 @@ void eliminar(){
 	char name[15];
 	printf("nombre del elemento a eliminar: ");
 	scanf("%s", name);
-	if (cabeza->curr == NULL)
+	if (cabeza->curr == NULL || cabeza->curr->hijo == NULL)
 	{
 		printf("La carpeta/archivo no existe\n");
-		return;
-	}
-	if (cabeza->curr->hijo == NULL)
-	{
-		printf("La carpeta/archivo no existe\n");
+		printf("presione enter para continuar\n");
+		while(getchar()!='\n');
+		getchar();
 		return;
 	}
 	nodo_t* tmp = cabeza->curr->hijo;
 	if (tmp->adyacente != NULL)
 	{
-		nodo_t* tmp2 = cabeza->curr->adyacente;
+		nodo_t* tmp2 = tmp->adyacente;
 		while(1)
 		{
 			if(strcmp(name, tmp2->nombre) == 0)
@@ -291,7 +289,9 @@ void eliminar(){
 					anidados(tmp2);
 					free(tmp2);
 					printf("La carpeta/archivo fue eliminada correctamente\n");
-
+					printf("presione enter para continuar\n");
+					while(getchar()!='\n');
+					getchar();
 					return;
 				}
 				else {
@@ -299,6 +299,9 @@ void eliminar(){
 					anidados(tmp2);
 					free(tmp2);
 					printf("La carpeta/archivo fue eliminada correctamente\n");
+					printf("presione enter para continuar\n");
+					while(getchar()!='\n');
+					getchar();
 					return;
 				}
 				
@@ -310,6 +313,9 @@ void eliminar(){
 			}
 			else {
 				printf("La carpeta/archivo no existe\n");
+				printf("presione enter para continuar\n");
+				while(getchar()!='\n');
+				getchar();
 				return;
 			}
 		}
@@ -319,9 +325,15 @@ void eliminar(){
 		anidados(tmp);
 		free(tmp);
 		printf("La carpeta/archivo fue eliminada correctamente\n");
+		printf("presione enter para continuar\n");
+		while(getchar()!='\n');
+		getchar();
 		return;
 	}
 	printf("La carpeta/archivo no existe\n");
+	printf("presione enter para continuar\n");
+	while(getchar()!='\n');
+	getchar();
 }
 
 void archivar(){
@@ -403,7 +415,7 @@ int main(){
 				archivar();
 				break;
 		}
-		system("cls");
+		system("clear"); // cambiar
 	}
 	printf("Adios\n");
 	return 0;
