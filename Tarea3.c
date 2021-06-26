@@ -15,8 +15,8 @@
 
 //--------------STRUCTS--------------
 typedef struct nodo{
-	char* nombre;
-	char* path;
+	char nombre[20];
+	char path[30];
 	struct nodo* adyacente;
 	struct nodo* hijo;			// NULL => si es archivo, dado que no puede poseer "hijos"
 	unsigned int tipo;			// 0 => carpetas | 1 => archivos
@@ -54,8 +54,8 @@ void incializar(){
 	char* nombre = "root";
 	nodo_t* aux;
 	aux = (nodo_t *) malloc(sizeof(nodo_t));
-	aux->nombre = nombre;
-	aux->path = "~\\root";
+	strcpy(aux->nombre, nombre);
+	strcpy(aux->path, "~\\root");
 	aux->adyacente = NULL;
 	aux->hijo = NULL;
 	aux->tipo = 0;
@@ -103,96 +103,103 @@ void modificar_nombre(){
 	printf("Indique el nombre al cual quiere cambiar: \n");
 	scanf("%s", nombre_despues);
 	while(flag){
-		if(cabeza->curr->nombre == nombre_anterior){
-			cabeza->curr->nombre = nombre_despues;
+		if(strcmp(cabeza->curr->nombre, nombre_anterior)==0){
+			strcpy(cabeza->curr->nombre, nombre_despues);
 			flag = 0;
 		}
 		else if(cabeza->curr->adyacente == NULL){
-			printf("No se encontrÃ³ el nombre :c\n");
+			printf("No se encontró el nombre :c\n");
 			flag = 0;
 		}
 		cabeza->curr = cabeza->curr->adyacente;
 	}	
 }
 
-void moverse_a_directorio(){ //pendiente
-	char directorio[15];
-    printf("escriba el nombre del directorio\n");
-    scanf("%s", directorio);
+void moverse_a_directorio(char* directorio){
+
     printf("directorio: %s\n",directorio);
     char * ruta = strtok(directorio, "\\");
-	nodo_t* aux;
-	nodo_t* aux2;
-	nodo_t* principio;
-	principio = cabeza->curr;
-	printf("cabeza->curr->nombre: %s\n", cabeza->curr->hijo->nombre);
-	if (strcmp(ruta, cabeza->raiz->nombre) == 0)
-	{
-		aux = cabeza->raiz->hijo;
-	}
-	else{
-		aux = cabeza->curr->hijo;
-	}
-	while(ruta != NULL){
-		if (strcmp(aux->nombre, ruta) == 0)
-		{
-			cabeza->curr = aux->hijo;
-			aux = cabeza->curr;
-			printf("pasa\n");
-		}
+    nodo_t* aux;
+    nodo_t* aux2;
+    nodo_t* principio;
+    principio = cabeza->curr;
 
-		else if (aux->adyacente == NULL)
-		{
-			printf("No se encontro la ruta\n");
-			break;
-		}
-		else{
-			aux2 = aux->adyacente;
-			while(1)
-	        {
-	            if(strcmp(aux2->nombre, ruta)==0)
-	            {
-	            	cabeza->curr = aux2->hijo;
-					aux = cabeza->curr;
-					printf("if 1\n");
-					break;
-	            }
-	            else if (aux2->adyacente != NULL)
-	            {
-	                aux = aux2;
-	                aux2 = aux->adyacente;
-	                printf("if 2\n");
-	            }
-				else if (aux2->adyacente == NULL)
-				{
-					printf("No se encontro la ruta");
-					cabeza->curr = principio;
-					break;
-				}
-	        }
-	        printf("fuera de while true\n");	
-		}
-		
-        
-		ruta = strtok(NULL, " ");
-	}
-	printf("presione enter para continuar\n");
-	while(getchar()!='\n');
-	getchar();
+
+    if (strcmp(ruta, cabeza->raiz->nombre) == 0)
+    {
+        aux = cabeza->raiz;
+    }
+    else{
+        if (cabeza->curr->hijo == NULL)
+        {
+        	printf("No se encontro la ruta\n");
+            return;
+        }
+        aux = cabeza->curr->hijo;
+    }
+    printf("cabeza->curr->nombre: %s\n", aux->nombre);
+    printf("cabeza->curr->path: %s\n", aux->path);
+    int flag = 0;
+    while(ruta != NULL){
+        if (strcmp(aux->nombre, ruta) == 0 && aux->tipo != 1)
+        {
+            cabeza->curr = aux;
+            if (cabeza->curr->hijo == NULL)
+            {
+                break;
+            }
+            aux = cabeza->curr->hijo;
+        }
+
+        else if (aux->adyacente == NULL || flag == 1)
+        {
+            cabeza->curr = principio;
+            printf("No se encontro la ruta\n");
+            break;
+        }
+        else{
+            aux2 = aux->adyacente;
+            while(1)
+            {
+                if(strcmp(aux2->nombre, ruta)==0  && aux->tipo != 1)
+                {
+                    cabeza->curr = aux2;
+                    if (cabeza->curr->hijo == NULL)
+                    {
+                        flag = 1;
+                        break;
+                    }
+                    aux = cabeza->curr->hijo;
+                    break;
+                }
+                else if (aux2->adyacente == NULL)
+                {
+                    printf("No se encontro la ruta");
+                    cabeza->curr = principio;
+                    break;
+                }
+                aux = aux2;
+                aux2 = aux->adyacente;
+            }   
+        }
+        ruta = strtok(NULL, " ");
+    }
+    printf("presione enter para continuar\n");
+    while(getchar()!='\n');
+    getchar();
 }
 
-void generar_archivo(){
-	char nombre[15];
+void generar_archivo(char* nombre, char* ruta){
 	nodo_t* aux;
-	char ruta[1000];
 	char slash[100] = "\\";
 	strcpy(ruta, cabeza->curr->path);
 	strcat(ruta,strcat(slash,nombre));
+	printf("ruta: %s\n", ruta);
 	printf("nombre del archivo:");
 	scanf("%s", nombre);
 	aux = (nodo_t *) malloc(sizeof(nodo_t));
-	aux->nombre = nombre;
-	aux->path = ruta;
+	strcpy(aux->nombre, nombre);
+	strcpy(aux->path, ruta);
 	aux->adyacente = cabeza->curr->hijo;
 	cabeza->curr->hijo = aux;
 	aux->hijo = NULL;
@@ -203,48 +210,23 @@ void generar_archivo(){
 	getchar();
 }
 
-void generar_carpeta(){
-	char nombre[15];
-	printf("nombre de carpeta: ");
-	scanf("%s", nombre);
-	char ruta[1000];
+void generar_carpeta(char* nombre, char* ruta){
 	char slash[100] = "\\";
 	strcpy(ruta, cabeza->curr->path);
 	strcat(ruta,strcat(slash,nombre));
+	printf("ruta: %s\n", ruta);
 	nodo_t* aux;
 	aux = (nodo_t *) malloc(sizeof(nodo_t));
-	aux->nombre = nombre;
-	aux->path = ruta;
+	strcpy(aux->nombre, nombre);
+	strcpy(aux->path, ruta);
 	aux->adyacente = cabeza->curr->hijo;
 	cabeza->curr->hijo = aux;
-	printf("nombre: %s\n", cabeza->curr->hijo->nombre);
-	printf("aux nombre: %s\n", aux->nombre);
 	aux->hijo = NULL;
 	aux->tipo = 0;
 	printf("Carpeta generada <3\n");
 	printf("presione enter para continuar\n");
 	while(getchar()!='\n');
 	getchar();
-}
-
-void crear(){
-	int numero0;
-	printf("\n------MENU CREACION------\n");
-	printf("Opciones:\n");
-	printf("1-Archivo\n");
-	printf("2-Carpeta\n");
-	scanf("%d", &numero0);
-	if (numero0 == 1)
-	{
-		generar_archivo();
-	}
-	else if (numero0 == 2)
-	{
-		generar_carpeta();
-	}
-	else{
-		printf("Error \n");
-	}
 }
 
 void anidados(nodo_t* nodo){ 
@@ -280,6 +262,7 @@ void anidados(nodo_t* nodo){
 
 void eliminar(){ 
 	char name[15];
+	printf("nombre del elemento a eliminar: ");
 	scanf("%s", name);
 	if (cabeza->curr == NULL)
 	{
@@ -287,12 +270,13 @@ void eliminar(){
 		return;
 	}
 	nodo_t* tmp = cabeza->curr;
+	printf("nombre de tmp: %s \n", tmp->nombre);
 	if (tmp->adyacente != NULL)
 	{
 		nodo_t* tmp2 = cabeza->curr->adyacente;
 		while(1)
 		{
-			if(tmp2->nombre == name)
+			if(strcmp(name, tmp2->nombre) == 0)
 			{
 				if(tmp2->adyacente != NULL)
 				{
@@ -322,7 +306,7 @@ void eliminar(){
 			}
 		}
 	}
-	else if (tmp->nombre == name)
+	else if (strcmp(name, tmp->nombre) == 0)
 	{
 		cabeza->curr = NULL;
 		cabeza->raiz = NULL;
@@ -347,7 +331,13 @@ int main(){
 	incializar();
 	int numero1;
 	int flag = 1;
+	char directorio[15];
+	int numero0;
+	char nombre[15];
+	char ruta[1000];
+	
 	while(flag){
+
 		numero1 = menu_principal();
 		switch(numero1){
 			case 0:
@@ -358,12 +348,31 @@ int main(){
 				mostrar_directorio();
 				break;
 
-			case 2:
-				moverse_a_directorio();
+			case 2:				
+				printf("nombre de carpeta: ");
+				scanf("%s", directorio);
+				moverse_a_directorio(directorio);
 				break;
 
 			case 3:
-				crear();
+				printf("\n------MENU CREACION------\n");
+				printf("Opciones:\n");
+				printf("1-Archivo\n");
+				printf("2-Carpeta\n");
+				scanf("%d", &numero0);
+				printf("nombre: \n");
+				scanf("%s", nombre);
+				if (numero0 == 1)
+					{
+						generar_archivo(nombre, ruta);
+					}
+				else if (numero0 == 2)
+					{
+						generar_carpeta(nombre, ruta);
+					}
+				else{
+					printf("Error \n");
+				}
 				break;
 
 			case 4:
@@ -371,7 +380,9 @@ int main(){
 				break;
 
 			case 5:
-				modificar_nombre();
+				printf("nombre de carpeta: ");
+				scanf("%s", nombre);
+				modificar_nombre(nombre);
 				break;
 
 			case 6:
