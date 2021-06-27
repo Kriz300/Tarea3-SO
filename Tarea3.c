@@ -133,6 +133,9 @@ void moverse_a_directorio(char* directorio){
         if (cabeza->curr->hijo == NULL)
         {
         	printf("No se encontro la ruta\n");
+        	printf("presione enter para continuar\n");
+    		while(getchar()!='\n');
+	    	getchar();
             return;
         }
         aux = cabeza->curr->hijo;
@@ -339,7 +342,151 @@ void eliminar(){
 void archivar(){
 }
 
-void mover(){
+void mover(char* directorio, char* nombre, char* ruta){
+	char slash[100] = "\\";
+	nodo_t* primero = cabeza->curr;//hola
+	nodo_t* aux, *tmp, * aux2;
+	nodo_t *ant = NULL;
+	tmp = cabeza->curr;
+	if (cabeza->curr->hijo == NULL)
+	{
+		printf("No existe el archivo \n");
+		printf("presione enter para continuar\n");
+		while(getchar()!='\n');
+		getchar();
+		return;
+	}
+	aux = cabeza->curr->hijo;
+	if (strcmp(aux->nombre, nombre) != 0)
+	{
+		if (aux->adyacente != NULL)
+		{
+			aux2 = aux->adyacente;
+			ant = aux;
+			while(1)
+			{
+				if (strcmp(aux2->nombre, nombre) == 0)
+				{
+					cabeza->curr = aux2;
+					break;
+				}
+				else if (aux2->adyacente == NULL)
+				{
+					printf("No existe el archivo \n");
+					printf("presione enter para continuar\n");
+					while(getchar()!='\n');
+					getchar();
+					return;
+				}
+				ant = aux2;
+				aux2 = ant->adyacente;
+			}
+		}
+		else
+		{
+			printf("No existe el archivo \n");
+			printf("presione enter para continuar\n");
+			while(getchar()!='\n');
+			getchar();
+			return;
+		}
+	}
+	//aux2 = wena
+	if (strcmp(aux->nombre, tmp->nombre) == 0 && strcmp(aux->path, tmp->path) == 0)
+	{
+		printf("Fallo el movimiento \n");
+		printf("presione enter para continuar\n");
+		while(getchar()!='\n');
+		getchar();
+		return;
+	}
+	moverse_a_directorio(directorio);//root
+	printf("iniciando \n");
+	if (strcmp(tmp->path, cabeza->curr->path) == 0)
+	{
+		printf("Fallo el movimiento \n");
+		printf("presione enter para continuar\n");
+		while(getchar()!='\n');
+		getchar();
+		return;
+	}
+	else if (cabeza->curr->hijo == NULL)
+	{
+		if (ant != NULL)
+		{
+			if (ant->adyacente != NULL)
+			{
+				ant->adyacente = aux2->adyacente;
+			}
+			ant->adyacente = NULL;
+		}
+		printf("chantado \n");
+		strcpy(ruta, cabeza->curr->path);
+		strcat(ruta,strcat(slash,nombre));
+		strcpy(aux->path, ruta);
+		cabeza->curr->hijo = aux;
+	}
+	else {
+		printf("else G \n");
+		if (aux->adyacente == NULL)
+		{
+			if (ant != NULL)
+			{
+				if (ant->adyacente != NULL)
+				{
+					ant->adyacente = aux2->adyacente;
+				}
+				ant->adyacente = NULL;
+			}
+			printf("if \n");
+			strcpy(ruta, cabeza->curr->path);
+			strcat(ruta,strcat(slash,nombre));
+			strcpy(aux->path, ruta);
+			aux->adyacente = cabeza->curr->hijo;
+			cabeza->curr->hijo = aux;
+
+		}
+		else{
+			printf("else c \n");
+			aux2 = aux->adyacente;
+			while(1)
+			{
+				printf("while \n");
+				if (aux2->adyacente == NULL)
+				{
+					if (ant != NULL)
+					{
+						if (ant->adyacente != NULL)
+						{
+							ant->adyacente = aux2->adyacente;
+						}
+						ant->adyacente = NULL;
+					}
+					printf("entro \n");
+					strcpy(ruta, cabeza->curr->path);
+					strcat(ruta,strcat(slash,nombre));
+					strcpy(aux2->path, ruta);
+					aux2->adyacente = cabeza->curr->hijo;
+					cabeza->curr->hijo = aux2;
+					break;
+				}
+				else
+				{
+					printf("ciclo \n");
+					aux = aux2;
+                	aux2 = aux->adyacente;
+				}
+			} 
+		}
+		
+	}
+	printf("GG \n");
+	cabeza->curr = primero;
+	printf("movimiento existoso. \n");
+	printf("presione enter para continuar\n");
+	while(getchar()!='\n');
+	getchar();
+	return;
 }
 
 int main(){
@@ -408,7 +555,11 @@ int main(){
 				break;
 
 			case 7:
-				mover();
+				printf("nombre de carpeta/archivo: ");
+				scanf("%s", nombre);
+				printf("a donde quiere moverlo: ");
+				scanf("%s", directorio);
+				mover(directorio, nombre, ruta);
 				break;
 
 			case 8:
