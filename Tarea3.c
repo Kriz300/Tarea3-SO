@@ -43,7 +43,7 @@ int menu_principal(){
 	printf("4-Ver causa\n");			
 	printf("5-Modificar nombre\n");		
 	printf("6-Eliminar\n");				//LISTO
-	printf("7-Mover archivo o carpeta\n");
+	printf("7-Mover archivo o carpeta\n"); //LISTO
 	printf("8-Archivar\n");
 	printf("Ingrese su opcion: ");
 	scanf("%d", &numero0);
@@ -193,6 +193,13 @@ void moverse_a_directorio(char* directorio){
 }
 
 void generar_archivo(char* nombre, char* ruta){
+	if (cabeza->curr->tipo != 0)
+	{
+		printf("Esta ubicado en un archivo\n");
+		printf("presione enter para continuar\n");
+		while(getchar()!='\n');
+		getchar();
+	}
 	nodo_t* aux;
 	char slash[100] = "\\";
 	strcpy(ruta, cabeza->curr->path);
@@ -214,6 +221,13 @@ void generar_archivo(char* nombre, char* ruta){
 }
 
 void generar_carpeta(char* nombre, char* ruta){
+	if (cabeza->curr->tipo != 0)
+	{
+		printf("Esta ubicado en un archivo\n");
+		printf("presione enter para continuar\n");
+		while(getchar()!='\n');
+		getchar();
+	}
 	char slash[100] = "\\";
 	strcpy(ruta, cabeza->curr->path);
 	strcat(ruta,strcat(slash,nombre));
@@ -401,7 +415,14 @@ void mover(char* directorio, char* nombre, char* ruta){
 		return;
 	}
 	moverse_a_directorio(directorio);//root
-	printf("iniciando \n");
+	if (cabeza->curr->tipo != 0)
+	{
+		printf("El destino no es una carpeta \n");
+		printf("presione enter para continuar\n");
+		while(getchar()!='\n');
+		getchar();
+		return;
+	}
 	if (strcmp(tmp->path, cabeza->curr->path) == 0)
 	{
 		printf("Fallo el movimiento \n");
@@ -420,14 +441,12 @@ void mover(char* directorio, char* nombre, char* ruta){
 			}
 			ant->adyacente = NULL;
 		}
-		printf("chantado \n");
 		strcpy(ruta, cabeza->curr->path);
 		strcat(ruta,strcat(slash,nombre));
 		strcpy(aux->path, ruta);
 		cabeza->curr->hijo = aux;
 	}
 	else {
-		printf("else G \n");
 		if (aux->adyacente == NULL)
 		{
 			if (ant != NULL)
@@ -438,7 +457,6 @@ void mover(char* directorio, char* nombre, char* ruta){
 				}
 				ant->adyacente = NULL;
 			}
-			printf("if \n");
 			strcpy(ruta, cabeza->curr->path);
 			strcat(ruta,strcat(slash,nombre));
 			strcpy(aux->path, ruta);
@@ -447,11 +465,9 @@ void mover(char* directorio, char* nombre, char* ruta){
 
 		}
 		else{
-			printf("else c \n");
 			aux2 = aux->adyacente;
 			while(1)
 			{
-				printf("while \n");
 				if (aux2->adyacente == NULL)
 				{
 					if (ant != NULL)
@@ -462,7 +478,6 @@ void mover(char* directorio, char* nombre, char* ruta){
 						}
 						ant->adyacente = NULL;
 					}
-					printf("entro \n");
 					strcpy(ruta, cabeza->curr->path);
 					strcat(ruta,strcat(slash,nombre));
 					strcpy(aux2->path, ruta);
@@ -472,7 +487,6 @@ void mover(char* directorio, char* nombre, char* ruta){
 				}
 				else
 				{
-					printf("ciclo \n");
 					aux = aux2;
                 	aux2 = aux->adyacente;
 				}
@@ -480,7 +494,6 @@ void mover(char* directorio, char* nombre, char* ruta){
 		}
 		
 	}
-	printf("GG \n");
 	cabeza->curr = primero;
 	printf("movimiento existoso. \n");
 	printf("presione enter para continuar\n");
