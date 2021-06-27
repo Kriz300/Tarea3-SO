@@ -17,6 +17,7 @@
 typedef struct nodo{
 	char nombre[20];
 	char path[30];
+	char causa[30];
 	struct nodo* adyacente;
 	struct nodo* hijo;			// NULL => si es archivo, dado que no puede poseer "hijos"
 	unsigned int tipo;			// 0 => carpetas | 1 => archivos
@@ -28,7 +29,7 @@ typedef struct cabezera{
 } cabezera_t;
 
 cabezera_t * cabeza;
-char cwd[1024];
+//char cwd[1024];
 
 //-----------------------------------
 
@@ -38,13 +39,14 @@ int menu_principal(){
 	printf("Opciones:\n");
 	printf("0-Salir\n");	//LISTO
 	printf("1-Ver directorio actual\n");	//LISTO
-	printf("2-Moverse a un directorio\n"); //LISTO
-	printf("3-Crear Archivo o Carpeta\n");	//LISTO
-	printf("4-Ver causa\n");			
-	printf("5-Modificar nombre\n");		
-	printf("6-Eliminar\n");				//LISTO
-	printf("7-Mover archivo o carpeta\n"); //LISTO
-	printf("8-Archivar\n");
+	printf("2-Mostrar Elementos\n");
+	printf("3-Moverse a un directorio\n"); //LISTO
+	printf("4-Crear Archivo o Carpeta\n");	//LISTO
+	printf("5-Ver causa\n");			//LISTO
+	printf("6-Modificar nombre\n");		//Probar
+	printf("7-Modificar causa\n");		//Probar
+	printf("8-Eliminar\n");				//LISTO
+	printf("9-Mover archivo o carpeta\n"); //LISTO
 	printf("Ingrese su opcion: ");
 	scanf("%d", &numero0);
 	return numero0;
@@ -55,7 +57,7 @@ void incializar(){
 	nodo_t* aux;
 	aux = (nodo_t *) malloc(sizeof(nodo_t));
 	strcpy(aux->nombre, nombre);
-	strcpy(aux->path, "~\\root");
+	strcpy(aux->path, "~/root");
 	aux->adyacente = NULL;
 	aux->hijo = NULL;
 	aux->tipo = 0;
@@ -70,31 +72,69 @@ void ver_causa(){
 	printf("Ingrese el nombre de la causa a revisar:");
 	scanf("%s", nombre1);
 	while(flag){
-		if(strcmp(cabeza->curr->nombre, nombre1) == 0){
-			printf("Nombre: %s", cabeza->curr->nombre);
-			printf("Causa: Mostrando causa...\n");
-			flag = 0;
+		if(strcmp(cabeza->curr->hijo->nombre, nombre1) == 0){
+			if (cabeza->curr->tipo != 1)
+			{
+				printf("Esta ubicado en una carpeta\n");
+				return;
+			}
+			printf("Nombre: %s\n", cabeza->curr->hijo->nombre);
+			printf("causa: %s\n", cabeza->curr->hijo->causa);
+			return;
 		}
-		else if(cabeza->curr->adyacente == NULL){
+		else if(cabeza->curr->hijo->adyacente == NULL){
 			printf("No se encontro la causa :c\n");
-			flag = 0;
+			return;
 		}
-		cabeza->curr = cabeza->curr->adyacente;
+		cabeza->curr->hijo = cabeza->curr->hijo->adyacente;
 	}
-	printf("presione enter para continuar\n");
-	while(getchar()!='\n');
-	getchar();
 }
 
 void mostrar_directorio(){
 	printf("%s\n",cabeza->curr->nombre);
 	printf("%s\n",cabeza->curr->path);
-	printf("presione enter para continuar\n");
-	while(getchar()!='\n');
-	getchar();
+	return;
 }
 
-void modificar_nombre(){
+void mostrar_elementos(){ //Probar
+	int flag = 1;
+	nodo_t *tmp = cabeza->curr->hijo;
+	if (tmp == NULL)
+	{
+		printf("No hay Elementos\n");
+		return;
+	}
+
+	while(flag){
+		if (tmp->adyacente == NULL)
+		{
+			if (tmp->tipo == 0)
+			{
+				printf("nombre: %s |", tmp->nombre);
+				printf(" Tipo: Carpeta\n");
+			}
+			else{
+				printf("nombre: %s  |", tmp->nombre);
+				printf(" Tipo: Archivo\n");
+			}
+			return;
+		}
+		if (tmp->tipo == 0)
+		{
+			printf("nombre: %s  |", tmp->nombre);
+			printf(" Tipo: Carpeta\n");
+		}
+		else
+		{
+			printf("nombre: %s  |", tmp->nombre);
+			printf(" Tipo: Archivo\n");
+		}
+		tmp = tmp->adyacente;
+	}
+}
+
+void modificar_nombre(){ //Revisar
+	nodo_t *tmp = cabeza->curr->hijo;
 	char nombre_despues[15];
 	char nombre_anterior[15];
 	int flag = 1;
@@ -103,22 +143,67 @@ void modificar_nombre(){
 	printf("Indique el nombre al cual quiere cambiar: \n");
 	scanf("%s", nombre_despues);
 	while(flag){
-		if(strcmp(cabeza->curr->nombre, nombre_anterior)==0){
-			strcpy(cabeza->curr->nombre, nombre_despues);
+		if(strcmp(tmp->nombre, nombre_anterior)==0){
+			strcpy(tmp->nombre, nombre_despues);
 			flag = 0;
 		}
-		else if(cabeza->curr->adyacente == NULL){
+		else if(tmp->adyacente == NULL){
 			printf("No se encontró el nombre :c\n");
 			flag = 0;
 		}
-		cabeza->curr = cabeza->curr->adyacente;
-	}	
+		tmp = tmp->adyacente;
+	}
+}
+
+void modificar_causa(){
+	nodo_t *tmp = cabeza->curr->hijo;
+	char causa_despues[30];
+	char causa_anterior[30];
+	char nombre_archivo[15];
+	int flag = 1;
+	int decision;
+	printf("Ingrese el nombre del archivo a cambiar su causa: \n");
+	scanf("%s", nombre_archivo);
+	while(flag){
+		if(strcmp(tmp->nombre, nombre_archivo)==0){
+			if (tmp->tipo != 1)
+			{
+				printf("Es una carpeta\n");
+				return;
+			}
+			strcpy(causa_anterior,tmp->causa);
+			printf("Ingrese la causa nueva: \n");
+			scanf("%s", causa_despues);
+			strcpy(tmp->causa, causa_despues);
+			printf("Causa cambiada \n");
+			printf("Desea archivar los cambios? \n");
+			printf("1-Si\n");
+			printf("2-No\n");
+			scanf("%d",&decision);
+			if (decision == 1)
+			{
+				printf("Cambios archivados \n");
+				return;
+			}
+			else if (decision == 2)
+			{
+				strcpy(tmp->causa, causa_anterior);
+				printf("Cambios no archivados\n");
+			}
+			return;
+		}
+		else if(tmp->adyacente == NULL){
+			printf("no se encontro el nombre del archivo :c\n");
+			return;
+		}
+		tmp = tmp->adyacente;
+	}
 }
 
 void moverse_a_directorio(char* directorio){
 
     printf("directorio: %s\n",directorio);
-    char * ruta = strtok(directorio, "\\");
+    char * ruta = strtok(directorio, "/");
     nodo_t* aux;
     nodo_t* aux2;
     nodo_t* principio;
@@ -133,10 +218,7 @@ void moverse_a_directorio(char* directorio){
         if (cabeza->curr->hijo == NULL)
         {
         	printf("No se encontro la ruta\n");
-        	printf("presione enter para continuar\n");
-    		while(getchar()!='\n');
-	    	getchar();
-            return;
+        	return;
         }
         aux = cabeza->curr->hijo;
     }
@@ -187,37 +269,30 @@ void moverse_a_directorio(char* directorio){
     }
     printf("nombre: %s\n", cabeza->curr->nombre);
     printf("path actual: %s\n", cabeza->curr->path);
-    printf("presione enter para continuar\n");
-    while(getchar()!='\n');
-    getchar();
+    return;
 }
 
-void generar_archivo(char* nombre, char* ruta){
+void generar_archivo(char* nombre, char* ruta, char *causa){
 	if (cabeza->curr->tipo != 0)
 	{
 		printf("Esta ubicado en un archivo\n");
-		printf("presione enter para continuar\n");
-		while(getchar()!='\n');
-		getchar();
+		return;
 	}
 	nodo_t* aux;
-	char slash[100] = "\\";
+	char slash[100] = "/";
 	strcpy(ruta, cabeza->curr->path);
 	strcat(ruta,strcat(slash,nombre));
 	printf("ruta: %s\n", ruta);
-	printf("nombre del archivo:");
-	scanf("%s", nombre);
 	aux = (nodo_t *) malloc(sizeof(nodo_t));
 	strcpy(aux->nombre, nombre);
 	strcpy(aux->path, ruta);
 	aux->adyacente = cabeza->curr->hijo;
 	cabeza->curr->hijo = aux;
+	strcpy(aux->causa, causa);
 	aux->hijo = NULL;
 	aux->tipo = 1;
 	printf("Archivo generado <3\n");
-	printf("presione enter para continuar\n");
-	while(getchar()!='\n');
-	getchar();
+	return;
 }
 
 void generar_carpeta(char* nombre, char* ruta){
@@ -228,7 +303,7 @@ void generar_carpeta(char* nombre, char* ruta){
 		while(getchar()!='\n');
 		getchar();
 	}
-	char slash[100] = "\\";
+	char slash[100] = "/";
 	strcpy(ruta, cabeza->curr->path);
 	strcat(ruta,strcat(slash,nombre));
 	printf("ruta: %s\n", ruta);
@@ -241,9 +316,7 @@ void generar_carpeta(char* nombre, char* ruta){
 	aux->hijo = NULL;
 	aux->tipo = 0;
 	printf("Carpeta generada <3\n");
-	printf("presione enter para continuar\n");
-	while(getchar()!='\n');
-	getchar();
+	return;
 }
 
 void anidados(nodo_t* nodo){ 
@@ -287,9 +360,6 @@ void eliminar(){
 	if (cabeza->curr == NULL || cabeza->curr->hijo == NULL)
 	{
 		printf("La carpeta/archivo no existe\n");
-		printf("presione enter para continuar\n");
-		while(getchar()!='\n');
-		getchar();
 		return;
 	}
 	nodo_t* tmp = cabeza->curr->hijo;
@@ -306,9 +376,6 @@ void eliminar(){
 					anidados(tmp2);
 					free(tmp2);
 					printf("La carpeta/archivo fue eliminada correctamente\n");
-					printf("presione enter para continuar\n");
-					while(getchar()!='\n');
-					getchar();
 					return;
 				}
 				else {
@@ -316,9 +383,6 @@ void eliminar(){
 					anidados(tmp2);
 					free(tmp2);
 					printf("La carpeta/archivo fue eliminada correctamente\n");
-					printf("presione enter para continuar\n");
-					while(getchar()!='\n');
-					getchar();
 					return;
 				}
 				
@@ -330,9 +394,6 @@ void eliminar(){
 			}
 			else {
 				printf("La carpeta/archivo no existe\n");
-				printf("presione enter para continuar\n");
-				while(getchar()!='\n');
-				getchar();
 				return;
 			}
 		}
@@ -342,22 +403,14 @@ void eliminar(){
 		anidados(tmp);
 		free(tmp);
 		printf("La carpeta/archivo fue eliminada correctamente\n");
-		printf("presione enter para continuar\n");
-		while(getchar()!='\n');
-		getchar();
 		return;
 	}
 	printf("La carpeta/archivo no existe\n");
-	printf("presione enter para continuar\n");
-	while(getchar()!='\n');
-	getchar();
-}
-
-void archivar(){
+	return;
 }
 
 void mover(char* directorio, char* nombre, char* ruta){
-	char slash[100] = "\\";
+	char slash[100] = "/";
 	nodo_t* primero = cabeza->curr;//hola
 	nodo_t* aux, *tmp, * aux2;
 	nodo_t *ant = NULL;
@@ -365,9 +418,6 @@ void mover(char* directorio, char* nombre, char* ruta){
 	if (cabeza->curr->hijo == NULL)
 	{
 		printf("No existe el archivo \n");
-		printf("presione enter para continuar\n");
-		while(getchar()!='\n');
-		getchar();
 		return;
 	}
 	aux = cabeza->curr->hijo;
@@ -387,9 +437,6 @@ void mover(char* directorio, char* nombre, char* ruta){
 				else if (aux2->adyacente == NULL)
 				{
 					printf("No existe el archivo \n");
-					printf("presione enter para continuar\n");
-					while(getchar()!='\n');
-					getchar();
 					return;
 				}
 				ant = aux2;
@@ -399,9 +446,6 @@ void mover(char* directorio, char* nombre, char* ruta){
 		else
 		{
 			printf("No existe el archivo \n");
-			printf("presione enter para continuar\n");
-			while(getchar()!='\n');
-			getchar();
 			return;
 		}
 	}
@@ -409,26 +453,17 @@ void mover(char* directorio, char* nombre, char* ruta){
 	if (strcmp(aux->nombre, tmp->nombre) == 0 && strcmp(aux->path, tmp->path) == 0)
 	{
 		printf("Fallo el movimiento \n");
-		printf("presione enter para continuar\n");
-		while(getchar()!='\n');
-		getchar();
 		return;
 	}
 	moverse_a_directorio(directorio);//root
 	if (cabeza->curr->tipo != 0)
 	{
 		printf("El destino no es una carpeta \n");
-		printf("presione enter para continuar\n");
-		while(getchar()!='\n');
-		getchar();
 		return;
 	}
 	if (strcmp(tmp->path, cabeza->curr->path) == 0)
 	{
 		printf("Fallo el movimiento \n");
-		printf("presione enter para continuar\n");
-		while(getchar()!='\n');
-		getchar();
 		return;
 	}
 	else if (cabeza->curr->hijo == NULL)
@@ -496,9 +531,6 @@ void mover(char* directorio, char* nombre, char* ruta){
 	}
 	cabeza->curr = primero;
 	printf("movimiento existoso. \n");
-	printf("presione enter para continuar\n");
-	while(getchar()!='\n');
-	getchar();
 	return;
 }
 
@@ -513,6 +545,7 @@ int main(){
 	int numero0;
 	char nombre[15];
 	char ruta[1000];
+	char causa[30];
 	
 	while(flag){
 
@@ -526,13 +559,17 @@ int main(){
 				mostrar_directorio();
 				break;
 
-			case 2:				
+			case 2:
+				mostrar_elementos();
+				break;
+
+			case 3:				
 				printf("nombre de carpeta: ");
 				scanf("%s", directorio);
 				moverse_a_directorio(directorio);
 				break;
 
-			case 3:
+			case 4:
 				printf("\n------MENU CREACION------\n");
 				printf("Opciones:\n");
 				printf("1-Archivo\n");
@@ -542,7 +579,9 @@ int main(){
 				scanf("%s", nombre);
 				if (numero0 == 1)
 					{
-						generar_archivo(nombre, ruta);
+						printf("Causa: \n");
+						scanf("%s", causa);
+						generar_archivo(nombre, ruta, causa);
 					}
 				else if (numero0 == 2)
 					{
@@ -553,33 +592,36 @@ int main(){
 				}
 				break;
 
-			case 4:
+			case 5:
 				ver_causa();
 				break;
 
-			case 5:
+			case 6:
 				printf("nombre de carpeta: ");
 				scanf("%s", nombre);
 				modificar_nombre(nombre);
 				break;
 
-			case 6:
+			case 7:
+				modificar_causa();
+				break;
+
+			case 8:
 				eliminar();
 				break;
 
-			case 7:
+			case 9:
 				printf("nombre de carpeta/archivo: ");
 				scanf("%s", nombre);
 				printf("a donde quiere moverlo: ");
 				scanf("%s", directorio);
 				mover(directorio, nombre, ruta);
 				break;
-
-			case 8:
-				archivar();
-				break;
 		}
-		system("clear"); // cambiar
+		printf("presione enter para continuar\n");
+		while(getchar()!='\n');
+		getchar();
+		system("clear");
 	}
 	printf("Adios\n");
 	return 0;
