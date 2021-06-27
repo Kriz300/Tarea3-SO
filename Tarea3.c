@@ -68,25 +68,26 @@ void incializar(){
 
 void ver_causa(){
 	char nombre1[15];
-	int flag = 1; 
-	printf("Ingrese el nombre de la causa a revisar:");
+	int flag = 1;
+	nodo_t *aux = cabeza->curr->hijo;
+	printf("Ingrese el nombre del archivo a revisar:");
 	scanf("%s", nombre1);
 	while(flag){
-		if(strcmp(cabeza->curr->hijo->nombre, nombre1) == 0){
-			if (cabeza->curr->tipo != 1)
+		if(strcmp(aux->nombre, nombre1) == 0){
+			if (aux->tipo != 1)
 			{
 				printf("Esta ubicado en una carpeta\n");
 				return;
 			}
-			printf("Nombre: %s\n", cabeza->curr->hijo->nombre);
-			printf("causa: %s\n", cabeza->curr->hijo->causa);
+			printf("Nombre: %s\n", aux->nombre);
+			printf("causa: %s\n", aux->causa);
 			return;
 		}
-		else if(cabeza->curr->hijo->adyacente == NULL){
+		else if(aux->adyacente == NULL){
 			printf("No se encontro la causa :c\n");
 			return;
 		}
-		cabeza->curr->hijo = cabeza->curr->hijo->adyacente;
+		aux = aux->adyacente;
 	}
 }
 
@@ -133,7 +134,7 @@ void mostrar_elementos(){ //Probar
 	}
 }
 
-void modificar_nombre(){ //Revisar
+void modificar_nombre(){
 	nodo_t *tmp = cabeza->curr->hijo;
 	char nombre_despues[15];
 	char nombre_anterior[15];
@@ -244,7 +245,7 @@ void moverse_a_directorio(char* directorio){
             aux2 = aux->adyacente;
             while(1)
             {
-                if(strcmp(aux2->nombre, ruta)==0  && aux->tipo != 1)
+                if(strcmp(aux2->nombre, ruta)==0  && aux2->tipo != 1)
                 {
                     cabeza->curr = aux2;
                     if (cabeza->curr->hijo == NULL)
@@ -257,7 +258,7 @@ void moverse_a_directorio(char* directorio){
                 }
                 else if (aux2->adyacente == NULL)
                 {
-                    printf("No se encontro la ruta");
+                    printf("No se encontro la ruta \n");
                     cabeza->curr = principio;
                     break;
                 }
@@ -365,6 +366,14 @@ void eliminar(){
 	nodo_t* tmp = cabeza->curr->hijo;
 	if (tmp->adyacente != NULL)
 	{
+		if (strcmp(name, tmp->nombre) == 0)
+		{
+			cabeza->curr->hijo = tmp->adyacente;
+			anidados(tmp);
+			free(tmp);
+			printf("La carpeta/archivo fue eliminada correctamente\n");
+			return;
+		}
 		nodo_t* tmp2 = tmp->adyacente;
 		while(1)
 		{
@@ -400,6 +409,7 @@ void eliminar(){
 	}
 	else if (strcmp(name, tmp->nombre) == 0)
 	{
+		cabeza->curr->hijo = NULL;
 		anidados(tmp);
 		free(tmp);
 		printf("La carpeta/archivo fue eliminada correctamente\n");
@@ -414,6 +424,7 @@ void mover(char* directorio, char* nombre, char* ruta){
 	nodo_t* primero = cabeza->curr;//hola
 	nodo_t* aux, *tmp, * aux2;
 	nodo_t *ant = NULL;
+	nodo_t *sig = NULL;
 	tmp = cabeza->curr;
 	if (cabeza->curr->hijo == NULL)
 	{
@@ -459,14 +470,24 @@ void mover(char* directorio, char* nombre, char* ruta){
 	if (cabeza->curr->tipo != 0)
 	{
 		printf("El destino no es una carpeta \n");
+		cabeza->curr = primero;
 		return;
 	}
 	if (strcmp(tmp->path, cabeza->curr->path) == 0)
 	{
 		printf("Fallo el movimiento \n");
+		cabeza->curr = primero;
 		return;
 	}
-	else if (cabeza->curr->hijo == NULL)
+	if (strcmp(aux->nombre, nombre) == 0)
+	{
+		if (aux->adyacente != NULL)
+		{
+			printf("test");
+			sig = aux->adyacente;
+		}
+	}
+	if (cabeza->curr->hijo == NULL)
 	{
 		if (ant != NULL)
 		{
@@ -497,7 +518,14 @@ void mover(char* directorio, char* nombre, char* ruta){
 			strcpy(aux->path, ruta);
 			aux->adyacente = cabeza->curr->hijo;
 			cabeza->curr->hijo = aux;
-
+			if (sig != NULL)
+			{
+				primero->hijo = sig;
+			}
+			else
+			{
+				primero->hijo = NULL;
+			}
 		}
 		else{
 			aux2 = aux->adyacente;
@@ -518,6 +546,14 @@ void mover(char* directorio, char* nombre, char* ruta){
 					strcpy(aux2->path, ruta);
 					aux2->adyacente = cabeza->curr->hijo;
 					cabeza->curr->hijo = aux2;
+					if (sig != NULL)
+					{
+						primero->hijo = sig;
+					}
+					else
+					{
+						primero->hijo = NULL;
+					}
 					break;
 				}
 				else
@@ -597,9 +633,7 @@ int main(){
 				break;
 
 			case 6:
-				printf("nombre de carpeta: ");
-				scanf("%s", nombre);
-				modificar_nombre(nombre);
+				modificar_nombre();
 				break;
 
 			case 7:
